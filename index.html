@@ -1,1 +1,270 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>SOP Flowchart Editor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="appbar">
+    <div class="brand">
+      <div class="brand-mark">SOP</div>
+      <div>
+        <strong>SOP Flowchart Editor</strong>
+        <span>Editor SOP + diagram alir berbasis web</span>
+      </div>
+    </div>
 
+    <div class="top-actions">
+      <button class="btn ghost" id="btnUndo" title="Undo (Ctrl+Z)">↶ Undo</button>
+      <button class="btn ghost" id="btnRedo" title="Redo (Ctrl+Y)">↷ Redo</button>
+      <button class="btn ghost" id="btnSave">Simpan</button>
+      <button class="btn ghost" id="btnLoad">Muat</button>
+      <button class="btn primary" id="btnPrint">Cetak / PDF</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <aside class="sidebar">
+      <section class="panel">
+        <h2>Flowchart</h2>
+        <p class="hint">Tambahkan bentuk, lalu geser ke posisi yang diinginkan.</p>
+
+        <div class="tool-grid">
+          <button class="tool" data-add-node="start">
+            <span class="tool-shape start-shape">Mulai</span>
+            <span>Mulai / Selesai</span>
+          </button>
+
+          <button class="tool" data-add-node="process">
+            <span class="tool-shape process-shape">Proses</span>
+            <span>Proses</span>
+          </button>
+
+          <button class="tool" data-add-node="decision">
+            <span class="tool-diamond"><span>?</span></span>
+            <span>Keputusan</span>
+          </button>
+
+          <button class="tool" data-add-node="text">
+            <span class="tool-text-icon">T</span>
+            <span>Teks Bebas</span>
+          </button>
+        </div>
+
+        <div class="stack">
+          <button class="btn full" id="btnConnect">↗ Hubungkan dengan Panah</button>
+          <button class="btn full" id="btnAddRow">＋ Tambah Baris SOP</button>
+          <button class="btn full danger-soft" id="btnDelete">Hapus Terpilih</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Properti</h2>
+
+        <label class="field">
+          <span>Teks / Label</span>
+          <textarea id="propText" rows="3" placeholder="Pilih objek flowchart atau panah"></textarea>
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Warna garis</span>
+            <input type="color" id="propStroke" value="#143b8f" />
+          </label>
+          <label class="field">
+            <span>Warna isi</span>
+            <input type="color" id="propFill" value="#ffffff" />
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Ukuran teks</span>
+            <input type="number" id="propFontSize" min="10" max="32" value="16" />
+          </label>
+          <label class="field">
+            <span>Ketebalan</span>
+            <select id="propWeight">
+              <option value="400">Normal</option>
+              <option value="600" selected>Semi Bold</option>
+              <option value="700">Bold</option>
+            </select>
+          </label>
+        </div>
+
+        <button class="btn full" id="btnApplyProps">Terapkan Properti</button>
+
+        <div class="divider"></div>
+
+        <label class="field">
+          <span>Label panah</span>
+          <input type="text" id="edgeLabel" placeholder="Contoh: ACC / Revisi" />
+        </label>
+        <button class="btn full" id="btnApplyEdgeLabel">Terapkan Label Panah</button>
+      </section>
+
+      <section class="panel compact">
+        <h2>Zoom</h2>
+        <div class="zoom-row">
+          <button class="btn icon" id="zoomOut">−</button>
+          <span id="zoomValue">100%</span>
+          <button class="btn icon" id="zoomIn">＋</button>
+          <button class="btn icon" id="zoomReset">1:1</button>
+        </div>
+      </section>
+
+      <section class="panel compact">
+        <h2>Petunjuk singkat</h2>
+        <ol class="help-list">
+          <li>Klik bentuk untuk menambah flowchart.</li>
+          <li>Tarik bentuk ke kolom/baris yang sesuai.</li>
+          <li>Klik dua kali bentuk untuk langsung edit teks.</li>
+          <li>Klik <b>Hubungkan dengan Panah</b>, lalu klik objek awal dan tujuan.</li>
+          <li>Klik panah, lalu geser titik biru untuk mengubah jalur panah.</li>
+          <li>Isi tabel SOP dengan klik langsung pada teks di sel.</li>
+        </ol>
+      </section>
+    </aside>
+
+    <section class="editor-area">
+      <div class="editor-toolbar">
+        <div class="status">
+          <span class="status-dot"></span>
+          <span id="statusText">Siap mengedit</span>
+        </div>
+        <div class="legend">
+          <span><i class="mini-node"></i> objek</span>
+          <span><i class="mini-edge"></i> panah</span>
+        </div>
+      </div>
+
+      <div class="viewport" id="viewport">
+        <div class="zoom-layer" id="zoomLayer">
+          <div class="paper" id="paper">
+            <div class="paper-title" contenteditable="true" spellcheck="false">
+              <h1>PROSEDUR OPERASIONAL STANDAR (SOP)</h1>
+              <h2>PENGELOLAAN DAN PUBLIKASI RILIS BERITA</h2>
+            </div>
+
+            <div class="workspace" id="workspace">
+              <table class="sop-table" id="sopTable">
+                <colgroup>
+                  <col style="width:54px">
+                  <col style="width:300px">
+                  <col style="width:150px">
+                  <col style="width:150px">
+                  <col style="width:150px">
+                  <col style="width:180px">
+                  <col style="width:150px">
+                  <col style="width:180px">
+                  <col style="width:120px">
+                  <col style="width:150px">
+                  <col style="width:230px">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th rowspan="2">No.</th>
+                    <th rowspan="2" contenteditable="true">Kegiatan</th>
+                    <th colspan="5">Pelaksana</th>
+                    <th colspan="3">Mutu Baku</th>
+                    <th rowspan="2" contenteditable="true">Keterangan</th>
+                  </tr>
+                  <tr>
+                    <th contenteditable="true">Petugas Lapangan</th>
+                    <th contenteditable="true">Kasubag AV</th>
+                    <th contenteditable="true">Kabag Humas</th>
+                    <th contenteditable="true">Kepala Biro Humas &amp; Protokol</th>
+                    <th contenteditable="true">Admin Publikasi</th>
+                    <th contenteditable="true">Kelengkapan</th>
+                    <th contenteditable="true">Waktu</th>
+                    <th contenteditable="true">Output</th>
+                  </tr>
+                </thead>
+                <tbody id="sopBody">
+                  <tr>
+                    <td class="row-number">1</td>
+                    <td class="editable-cell" contenteditable="true">Petugas lapangan menyusun rilis mentah berdasarkan kegiatan, melengkapi informasi kegiatan dan dokumentasi pendukung, lalu menginputnya melalui portal.</td>
+                    <td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td>
+                    <td class="editable-cell" contenteditable="true">• Form rilis awal<br>• Foto/Video<br>• Informasi kegiatan</td>
+                    <td class="editable-cell" contenteditable="true">Maks. 60 menit</td>
+                    <td class="editable-cell" contenteditable="true">Rilis Mentah</td>
+                    <td class="editable-cell" contenteditable="true">Rilis disimpan sebagai draft.</td>
+                  </tr>
+                  <tr>
+                    <td class="row-number">2</td>
+                    <td class="editable-cell" contenteditable="true">Kasubag AV memeriksa, menyunting, dan menyempurnakan berita sesuai standar penulisan dan kelengkapan informasi.</td>
+                    <td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td>
+                    <td class="editable-cell" contenteditable="true">• Rilis mentah<br>• Pedoman penulisan<br>• Dokumentasi</td>
+                    <td class="editable-cell" contenteditable="true">Maks. 30 menit</td>
+                    <td class="editable-cell" contenteditable="true">Rilis Hasil Olahan</td>
+                    <td class="editable-cell" contenteditable="true">Status menunggu persetujuan.</td>
+                  </tr>
+                  <tr>
+                    <td class="row-number">3</td>
+                    <td class="editable-cell" contenteditable="true">Kabag Humas memeriksa substansi, narasi, dokumentasi, serta penentuan nama/jabatan, kemudian memberikan persetujuan atau catatan revisi.</td>
+                    <td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td>
+                    <td class="editable-cell" contenteditable="true">• Rilis hasil olahan<br>• Informasi kegiatan<br>• Ketentuan penulisan</td>
+                    <td class="editable-cell" contenteditable="true">Maks. 30 menit</td>
+                    <td class="editable-cell" contenteditable="true">Rilis ACC / Catatan Revisi</td>
+                    <td class="editable-cell" contenteditable="true">Jika revisi, rilis dikembalikan untuk diperbaiki.</td>
+                  </tr>
+                  <tr>
+                    <td class="row-number">4</td>
+                    <td class="editable-cell" contenteditable="true">Kasubag AV meneruskan rilis yang telah disetujui kepada Kepala Biro melalui portal.</td>
+                    <td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td>
+                    <td class="editable-cell" contenteditable="true">• Rilis ACC<br>• Dokumentasi<br>• Kelengkapan data</td>
+                    <td class="editable-cell" contenteditable="true">Maks. 10 menit</td>
+                    <td class="editable-cell" contenteditable="true">Rilis Diajukan</td>
+                    <td class="editable-cell" contenteditable="true">Status menunggu persetujuan Kepala Biro.</td>
+                  </tr>
+                  <tr>
+                    <td class="row-number">5</td>
+                    <td class="editable-cell" contenteditable="true">Kepala Biro memeriksa isi dan kelayakan berita, kemudian memberikan persetujuan akhir atau catatan revisi.</td>
+                    <td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td>
+                    <td class="editable-cell" contenteditable="true">• Rilis diajukan<br>• Ketentuan substansi<br>• Pedoman publikasi</td>
+                    <td class="editable-cell" contenteditable="true">Maks. 15 menit</td>
+                    <td class="editable-cell" contenteditable="true">Rilis Siap Publikasi / Revisi</td>
+                    <td class="editable-cell" contenteditable="true">Jika revisi, dikembalikan untuk diperbaiki.</td>
+                  </tr>
+                  <tr>
+                    <td class="row-number">6</td>
+                    <td class="editable-cell" contenteditable="true">Admin Publikasi melakukan pemeriksaan teknis akhir, mempublikasikan berita melalui portal resmi, dan menyebarluaskan berita kepada media.</td>
+                    <td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td><td class="flow-cell"></td>
+                    <td class="editable-cell" contenteditable="true">• Rilis ACC akhir<br>• Foto/Video final<br>• Daftar media</td>
+                    <td class="editable-cell" contenteditable="true">Maks. 30 menit</td>
+                    <td class="editable-cell" contenteditable="true">Berita Dipublikasikan</td>
+                    <td class="editable-cell" contenteditable="true">Rilis terpublikasi dan didistribusikan.</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <svg class="edge-layer" id="edgeLayer" aria-hidden="true">
+                <defs>
+                  <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L9,3 z" fill="context-stroke"></path>
+                  </marker>
+                </defs>
+                <g id="edges"></g>
+                <g id="edgeHandles"></g>
+              </svg>
+
+              <div class="node-layer" id="nodeLayer"></div>
+            </div>
+
+            <div class="paper-note" contenteditable="true">
+              <b>Catatan:</b> Jika pada tahap pemeriksaan terdapat ketidaksesuaian, maka rilis dikembalikan ke tahap sebelumnya untuk dilakukan perbaikan sesuai catatan revisi.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

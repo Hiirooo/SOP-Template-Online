@@ -2,6 +2,14 @@
 
 SOP Studio adalah editor berbasis web untuk menyusun tabel Prosedur Operasional Standar sekaligus menggambar alur proses di atasnya. Aplikasi berjalan langsung di browser tanpa backend dan dapat digunakan melalui GitHub Pages atau hosting statis lain.
 
+## Website online
+
+Setelah GitHub Pages diaktifkan, aplikasi tersedia di:
+
+**https://hiirooo.github.io/SOP-Template-Online/**
+
+Deployment berjalan otomatis setiap ada perubahan pada branch `Hiro` melalui workflow `.github/workflows/pages.yml`.
+
 ## Fitur utama
 
 - Editor tiga panel: palet bentuk, kanvas, dan inspector properti.
@@ -52,3 +60,11 @@ Ekspor gambar dan Word menggunakan dependensi browser yang dimuat dari CDN:
 ## Dukungan browser
 
 Direkomendasikan menggunakan versi terbaru Google Chrome, Microsoft Edge, Firefox, atau Safari. Ekspor DOCX dan PNG memerlukan koneksi internet ketika dependensi CDN belum tersimpan di cache browser.
+
+## Aktivasi GitHub Pages
+
+1. Buka **Settings → Pages** pada repository.
+2. Pada bagian **Build and deployment**, pilih **Source: GitHub Actions**.
+3. Jalankan ulang workflow **Deploy SOP Studio to GitHub Pages** apabila deployment pertama belum berjalan otomatis.
+
+Setelah aktif, perubahan berikutnya akan dipublikasikan otomatis saat ada push ke branch `Hiro`.
